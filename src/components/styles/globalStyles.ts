@@ -1,6 +1,41 @@
 import { createGlobalStyle } from "styled-components";
 
 const GlobalStyles = createGlobalStyle`
+:root{
+// colors
+	--color-tone-1: #000000;
+	--color-tone-2: #787c7e;
+	--color-tone-3: #878a8c;
+	--color-tone-4: #d3d6da;
+	--color-tone-5: #edeff1;
+	--color-tone-6: #f6f7f8;
+	--color-tone-7: #ffffff;
+	--color-tone-8: #121212;
+	--color-tone-9: #dfdfdf;
+	--color-tone-10: #000000;
+	--color-tone-11: #787c7e;
+	--color-tone-12: #363636;
+	--green: #6aaa64;
+	--darkendGreen: #538d4e;
+	--yellow: #c9b458;
+	--darkendYellow: #b59f3b;
+	--lightGray: #d3d6da;
+	--gray: #86888a;
+	--gray-2: #dcdcdc;
+	--gray-3: #dfdfdf;
+	--darkGray: #939598;
+	--white: #fff;
+	--black: #212121;
+	--black-2: #121212;
+	--black-3: #363636;
+	--orange: #f5793a;
+	--blue: #85c0f9;
+// breakpoints
+	--tablet: 768px;
+	--desktop: 1024px;
+}
+
+
 /* Box sizing rules */
 *,
 *::before,
@@ -38,7 +73,7 @@ html:focus-within {
 
 body {
 	text-rendering: optimizeSpeed;
-  line-height: 1.5;
+  	line-height: 1.5;
 	font-family: "Open sans", sans-serif;
 }
 
@@ -85,13 +120,6 @@ ol {
 }
 
 
-.green{
-	background-color: #6aaa64;
-}
-
-.yellow{
-	background-color: #b59f3b;
-}
 
 `;
 

@@ -1,149 +1,122 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
-import styled from "styled-components/macro";
-import wordBank from "../../data/wordBank.json";
+import {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import styled, { css } from "styled-components/macro";
 import validWords from "../../data/validWords.json";
 import toast from "react-hot-toast";
-import { GuessedLetter } from "../../App";
+import { DarkModeContext, checkTile, GameState } from "../../App";
 
 interface BoardProps {
   pressedKey: {
     key: string;
-    hasUpdated: boolean;
+    updated: boolean;
   };
-  setIsGameOver: Dispatch<SetStateAction<boolean>>;
-  setGuessedLetters: Dispatch<SetStateAction<GuessedLetter[]>>;
+  solution: string;
+  setGameState: Dispatch<SetStateAction<GameState>>;
+  setGuess: Dispatch<SetStateAction<string[]>>;
+  playAgain: boolean;
 }
 
-interface RowState {
-  id: number;
-  tiles: string[];
-}
+type Row = string[];
 
 const Board: FC<BoardProps> = ({
   pressedKey,
-  setIsGameOver,
-  setGuessedLetters,
+  solution,
+  setGameState,
+  setGuess,
+  playAgain,
 }) => {
-  const [correctWord, setCorrectWord] = useState("");
-  const [activeRow, setActiveRow] = useState(1);
-  const [boardState, setBoardState] = useState<RowState[]>([
-    {
-      id: 1,
-      tiles: ["", "", "", "", ""],
-    },
-    {
-      id: 2,
-      tiles: ["", "", "", "", ""],
-    },
-    {
-      id: 3,
-      tiles: ["", "", "", "", ""],
-    },
-    {
-      id: 4,
-      tiles: ["", "", "", "", ""],
-    },
-    {
-      id: 5,
-      tiles: ["", "", "", "", ""],
-    },
-    {
-      id: 6,
-      tiles: ["", "", "", "", ""],
-    },
+  const [activeRow, setActiveRow] = useState(0);
+  const [boardState, setBoardState] = useState<Row[]>([
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
   ]);
+  const darkMode = useContext(DarkModeContext);
 
-  const guessWord = (letters: string[]): void => {
+  // console.log(boardState);
+
+  const guessWord = (): void => {
+    const letters = boardState[activeRow];
     if (letters[4] === "") return;
-    const guess = boardState[activeRow - 1].tiles.join("");
+    const guess = letters.join("");
 
-    console.log(`correct word: ${correctWord}`);
-    console.log(`guess: ${guess}`);
-    // console.log(validWords.includes(guess));
-
+    console.log(`correct word: ${solution}`);
+    // console.log(`guess: ${guess}`);
     if (!validWords.includes(guess)) {
-      toast.error("Not on word list");
-    } else if (correctWord === guess) {
-      toast.success("Word guessed!");
-      setIsGameOver(true);
-    } else if (activeRow === 6) {
-      toast.error("Game over");
+      if (darkMode) {
+        toast("Not in word list");
+      } else {
+        toast("Not in word list", {
+          style: {
+            background: "#333",
+            color: "#fff",
+          },
+        });
+      }
     } else {
-      const correctLetters = correctWord.split("");
-      const guessedLetters: GuessedLetter[] = letters.map(
-        (letter, letterIdx) => {
-          const newLetter = {
-            idx: letterIdx,
-            key: letter,
-            correctSpot: false,
-            onWord: false,
-          };
-          correctLetters.forEach((correctLetter, correctLetterIdx) => {
-            if (correctLetter === letter && correctLetterIdx === letterIdx) {
-              newLetter.correctSpot = true;
-              newLetter.onWord = true;
-            } else if (correctLetter === letter) {
-              newLetter.onWord = true;
-            }
-          });
-          return newLetter;
-        }
-      );
-      setGuessedLetters(guessedLetters);
-      setActiveRow(activeRow + 1);
+      setGuess(letters);
+      if (solution === guess) {
+        toast.success("Word guessed!");
+        setGameState({
+          gameOver: true,
+          condition: "win",
+        });
+        setActiveRow(activeRow + 1);
+      } else if (activeRow === 5) {
+        toast.error("Game over");
+        setGameState({
+          gameOver: true,
+          condition: "loss",
+        });
+        setActiveRow(activeRow + 1);
+      } else {
+        setActiveRow(activeRow + 1);
+      }
     }
-    //check if word is on word list +
-    //check if it the right word +
-    //check if any letters add up
-    // -if they are in the right position and in the word
-    // -if they are in the word but not right position
-    // go to next row
   };
 
   const updateLetter = (): void => {
     setBoardState(prevState =>
-      prevState.map(row => {
-        if (row.id === activeRow) {
-          const index = row.tiles.findIndex(tile => tile === "");
-          row.tiles[index] = pressedKey.key;
-          return {
-            ...row,
-          };
-        } else {
-          return row;
+      prevState.map((row, rowIdx) => {
+        if (rowIdx === activeRow) {
+          const index = row.findIndex(tile => tile === "");
+          if (index === -1) return row;
+          row[index] = pressedKey.key;
         }
+        return row;
       })
     );
   };
 
   const deleteLetter = (): void => {
     setBoardState(prevState =>
-      prevState.map(row => {
-        if (row.id === activeRow) {
-          const index = row.tiles.findIndex(tile => tile === "");
+      prevState.map((row, rowIdx) => {
+        if (rowIdx === activeRow) {
+          if (row[0] === "") return row;
+          const index = row.findIndex(tile => tile === "");
           if (index === -1) {
-            row.tiles[4] = "";
+            row[4] = "";
           } else {
-            row.tiles[index - 1] = "";
+            row[index - 1] = "";
           }
-          return {
-            ...row,
-          };
-        } else {
-          return row;
         }
+        return row;
       })
     );
   };
 
   useEffect(() => {
-    setCorrectWord(wordBank[Math.floor(Math.random() * wordBank.length)]);
-  }, []);
-
-  useEffect(() => {
     if (pressedKey.key === "enter") {
-      const letters = boardState[activeRow - 1].tiles;
-      guessWord(letters);
+      guessWord();
     } else if (pressedKey.key === "delete") {
       deleteLetter();
     } else {
@@ -151,15 +124,58 @@ const Board: FC<BoardProps> = ({
     }
   }, [pressedKey]);
 
+  useEffect(() => {
+    setBoardState([
+      ["", "", "", "", ""],
+      ["", "", "", "", ""],
+      ["", "", "", "", ""],
+      ["", "", "", "", ""],
+      ["", "", "", "", ""],
+      ["", "", "", "", ""],
+    ]);
+    setActiveRow(0);
+  }, [playAgain]);
+  console.log(boardState);
   return (
     <BoardGrid>
-      {boardState.map(row => (
-        <Row key={row.id}>
-          {row.tiles.map((tile, idx) => (
-            <Tile key={idx}>{tile}</Tile>
-          ))}
-        </Row>
-      ))}
+      {boardState.map((row, rowIdx) => {
+        if (rowIdx < activeRow) {
+          return (
+            <Row key={rowIdx}>
+              {row.map((tile, tileIdx) => {
+                const tileInfo = checkTile(tile, tileIdx, solution);
+                return (
+                  <Tile
+                    key={tileIdx}
+                    inWord={tileInfo.inWord}
+                    correctSpot={tileInfo.correctSpot}
+                    incorrect={tileInfo.incorrect}
+                    darkMode={darkMode}
+                  >
+                    {tile}
+                  </Tile>
+                );
+              })}
+            </Row>
+          );
+        } else {
+          return (
+            <Row key={rowIdx}>
+              {row.map((tile, tileIdx) => (
+                <Tile
+                  key={tileIdx}
+                  inWord={false}
+                  correctSpot={false}
+                  incorrect={false}
+                  darkMode={darkMode}
+                >
+                  {tile}
+                </Tile>
+              ))}
+            </Row>
+          );
+        }
+      })}
     </BoardGrid>
   );
 };
@@ -171,6 +187,8 @@ const BoardGrid = styled.div`
   grid-template-rows: repeat(6, 1fr);
   grid-gap: 5px;
   padding: 10px;
+  width: 322px;
+  height: 384px;
 `;
 
 const Row = styled.div`
@@ -179,14 +197,51 @@ const Row = styled.div`
   grid-gap: 5px;
 `;
 
-const Tile = styled.div`
-  width: 38px;
-  height: 38px;
+const Tile = styled.div<{
+  inWord?: boolean;
+  correctSpot?: boolean;
+  incorrect?: boolean;
+  darkMode: boolean;
+}>`
+  width: 56.4px;
+  height: 56.4px;
   display: flex;
+  color: ${({ darkMode }) =>
+    darkMode ? "var(--color-tone-7)" : "var(--color-tone-1)"};
+  border: ${({ darkMode }) =>
+    darkMode
+      ? "1px solid var(--color-tone-3)"
+      : "1px solid var(--color-tone-4)"};
   justify-content: center;
   align-items: center;
-  font-size: 1.6rem;
+  font-size: 2.5rem;
   font-weight: 600;
-  border: 2px solid black;
   text-transform: uppercase;
+  ${({ incorrect, darkMode }) =>
+    incorrect &&
+    css`
+      background-color: var(--color-tone-12);
+      border: ${darkMode
+        ? "1px solid var(--color-tone-8)"
+        : "1px solid var(--color-tone-7)"};
+      color: var(--color-tone-7);
+    `}
+  ${({ inWord, darkMode }) =>
+    inWord &&
+    css`
+      background-color: var(--darkendYellow);
+      border: ${darkMode
+        ? "1px solid var(--color-tone-8)"
+        : "1px solid var(--color-tone-7)"};
+      color: var(--color-tone-7);
+    `}
+  ${({ correctSpot, darkMode }) =>
+    correctSpot &&
+    css`
+      background-color: var(--darkendGreen);
+      border: ${darkMode
+        ? "1px solid var(--color-tone-8)"
+        : "1px solid var(--color-tone-7)"};
+      color: var(--color-tone-7);
+    `}
 `;
