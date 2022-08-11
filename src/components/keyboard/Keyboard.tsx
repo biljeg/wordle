@@ -125,7 +125,9 @@ const Keyboard: FC<KeyboardProps> = ({
 
 export default Keyboard;
 
-const KeyboardContainer = styled.div``;
+const KeyboardContainer = styled.div`
+  width: 100%;
+`;
 
 const Row = styled.div`
   display: flex;
@@ -155,7 +157,6 @@ const Key = styled.button<{
     darkMode ? "var(--color-tone-7)" : "var(--color-tone-1)"};
   border-radius: 4px;
   height: 58px;
-  min-width: 40px;
   font-size: 1.4rem;
   margin-right: 6px;
   text-transform: uppercase;

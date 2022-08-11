@@ -159,7 +159,7 @@ const BoardSection = styled.section`
 const KeyboardSection = styled.section`
   display: flex;
   justify-content: center;
-  max-width: 460px;
+  width: min(95vw, 460px);
 `;
 
 const H1 = styled.h1`
