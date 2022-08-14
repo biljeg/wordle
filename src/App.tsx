@@ -10,11 +10,7 @@ import wordBank from "./data/wordBank.json";
 import Moon from "./assets/icons/moon-fill.svg";
 import Sun from "./assets/icons/sun.svg";
 
-//NOW
-// remove unneeded fonts
-// remove unneeded colors
 // add eslint and others to make it github worthy
-// add all styles like in original and the animations
 
 export const DarkModeContext = createContext(false);
 
@@ -73,7 +69,6 @@ const App = () => {
   const handleThemeSwitch = (): void => {
     setDarkMode(!darkMode);
   };
-  console.log(gameState);
 
   useEffect(() => {
     setSolution(wordBank[Math.floor(Math.random() * wordBank.length)]);

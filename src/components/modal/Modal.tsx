@@ -13,8 +13,8 @@ interface ModalProps {
 const modalRoot = document.getElementById("modal-root") as HTMLElement;
 
 const Modal: FC<ModalProps> = ({ gameState, setPlayAgain }) => {
-  if (!gameState.gameOver) return null;
   const darkMode = useContext(DarkModeContext);
+  if (!gameState.gameOver) return null;
 
   const playAgain = (): void => {
     setPlayAgain(prevState => !prevState);
@@ -36,9 +36,11 @@ const Modal: FC<ModalProps> = ({ gameState, setPlayAgain }) => {
               width="24"
               data-testid="icon-close"
             >
+              {/* eslint-disable-next-line */}
               <path
                 fill="var(--color-tone-1)"
                 d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                // eslint-disable-next-line
               ></path>
             </CloseIcon>
           </ModalHeader>
@@ -65,9 +67,11 @@ const Modal: FC<ModalProps> = ({ gameState, setPlayAgain }) => {
               width="24"
               data-testid="icon-close"
             >
+              {/* eslint-disable-next-line */}
               <path
                 fill="var(--color-tone-1)"
                 d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                // eslint-disable-next-line
               ></path>
             </CloseIcon>
           </ModalHeader>

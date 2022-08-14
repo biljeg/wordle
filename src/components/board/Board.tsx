@@ -6,9 +6,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import styled, { css } from "styled-components/macro";
-import validWords from "../../data/validWords.json";
+import styled, { css, keyframes } from "styled-components/macro";
 import toast from "react-hot-toast";
+
+import validWords from "../../data/validWords.json";
 import { DarkModeContext, checkTile, GameState } from "../../App";
 
 interface BoardProps {
@@ -32,6 +33,7 @@ const Board: FC<BoardProps> = ({
   playAgain,
 }) => {
   const [activeRow, setActiveRow] = useState(0);
+  const [incorrectWord, setIncorrectWord] = useState(-1);
   const [boardState, setBoardState] = useState<Row[]>([
     ["", "", "", "", ""],
     ["", "", "", "", ""],
@@ -42,15 +44,11 @@ const Board: FC<BoardProps> = ({
   ]);
   const darkMode = useContext(DarkModeContext);
 
-  // console.log(boardState);
-
   const guessWord = (): void => {
     const letters = boardState[activeRow];
     if (letters[4] === "") return;
     const guess = letters.join("");
 
-    console.log(`correct word: ${solution}`);
-    // console.log(`guess: ${guess}`);
     if (!validWords.includes(guess)) {
       if (darkMode) {
         toast("Not in word list");
@@ -62,6 +60,7 @@ const Board: FC<BoardProps> = ({
           },
         });
       }
+      setIncorrectWord(activeRow);
     } else {
       setGuess(letters);
       if (solution === guess) {
@@ -135,7 +134,9 @@ const Board: FC<BoardProps> = ({
     ]);
     setActiveRow(0);
   }, [playAgain]);
-  console.log(boardState);
+
+  console.log(incorrectWord);
+
   return (
     <BoardGrid>
       {boardState.map((row, rowIdx) => {
@@ -151,6 +152,7 @@ const Board: FC<BoardProps> = ({
                     correctSpot={tileInfo.correctSpot}
                     incorrect={tileInfo.incorrect}
                     darkMode={darkMode}
+                    pop={tile !== ""}
                   >
                     {tile}
                   </Tile>
@@ -160,7 +162,12 @@ const Board: FC<BoardProps> = ({
           );
         } else {
           return (
-            <Row key={rowIdx}>
+            <Row
+              key={rowIdx}
+              incorrect={incorrectWord === activeRow && activeRow === rowIdx}
+              // I would usually use animation library to handle repeated clicks
+              onAnimationEnd={() => setIncorrectWord(-1)}
+            >
               {row.map((tile, tileIdx) => (
                 <Tile
                   key={tileIdx}
@@ -168,6 +175,7 @@ const Board: FC<BoardProps> = ({
                   correctSpot={false}
                   incorrect={false}
                   darkMode={darkMode}
+                  pop={tile !== ""}
                 >
                   {tile}
                 </Tile>
@@ -191,10 +199,50 @@ const BoardGrid = styled.div`
   height: 384px;
 `;
 
-const Row = styled.div`
+const incorrectWord = keyframes`
+  0%{
+    transform: translateX(0);
+  }
+  20%{
+    transform: translateX(-5px);
+  }
+  40%{
+    transform: translateX(5px);
+  }
+  60%{
+    transform: translateX(-5px);
+  }
+  80%{
+    transform: translateX(5px);
+  }
+  100%{
+    transform: translateX(0);
+  }
+`;
+
+const Row = styled.div<{
+  incorrect?: boolean;
+}>`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-gap: 5px;
+  ${({ incorrect }) =>
+    incorrect &&
+    css`
+      animation: ${incorrectWord} 0.5s;
+    `}
+`;
+
+const onType = keyframes`
+  0%{
+    scale: 1;
+  }
+  50%{
+scale: 1.1;
+  }
+  100%{
+scale: 1;
+  }
 `;
 
 const Tile = styled.div<{
@@ -202,6 +250,7 @@ const Tile = styled.div<{
   correctSpot?: boolean;
   incorrect?: boolean;
   darkMode: boolean;
+  pop?: boolean;
 }>`
   width: 56.4px;
   height: 56.4px;
@@ -217,6 +266,11 @@ const Tile = styled.div<{
   font-size: 2.5rem;
   font-weight: 600;
   text-transform: uppercase;
+  ${({ pop }) =>
+    pop &&
+    css`
+      animation: ${onType} 0.1s ease-in;
+    `}
   ${({ incorrect, darkMode }) =>
     incorrect &&
     css`

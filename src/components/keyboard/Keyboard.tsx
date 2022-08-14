@@ -1,7 +1,6 @@
 import { FC, useContext, useEffect, useState } from "react";
 import styled, { css } from "styled-components/macro";
-//use react inline svg like on stackoverflow
-import Delete from "../../assets/icons/backspace-fill.svg";
+
 import defaultKeys from "./defaultKeys";
 import { DarkModeContext, checkTile } from "../../App";
 
